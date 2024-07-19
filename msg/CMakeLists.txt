@@ -154,6 +154,7 @@ set(msg_files
 	OpenDroneIdArmStatus.msg
 	OpenDroneIdOperatorId.msg
 	OpenDroneIdSelfId.msg
+	OpenDroneIdSystem.msg
 	OrbitStatus.msg
 	OrbTest.msg
 	OrbTestLarge.msg
