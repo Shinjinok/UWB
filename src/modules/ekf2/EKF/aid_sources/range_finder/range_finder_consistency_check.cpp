@@ -93,3 +93,23 @@ void RangeFinderConsistencyCheck::updateConsistency(float vz, uint64_t time_us)
 		}
 	}
 }
+
+void RangeFinderConsistencyCheck::checkIfBlocked(const float dist_bottom, const float current_hgt, uint64_t time_us)
+{
+	if (time_us - _time_last_update_us < 1e6) {
+
+		float median_dist = _distance_filter.apply(dist_bottom);
+
+		if (median_dist < _max_fog_dist && median_dist - _prev_median_dist < -_max_fog_dist) {
+			_is_blocked = true;
+			_blocked_at_hgt = current_hgt;
+
+			// } else if (_is_blocked && current_hgt - _blocked_at_hgt < -2 * _max_fog_dist && median_dist > _max_fog_dist * 1.5f) {
+
+		} else if (_is_blocked && median_dist > 2.f * _max_fog_dist) {
+			_is_blocked = false;
+		}
+
+		_prev_median_dist = median_dist;
+	}
+}

@@ -999,6 +999,16 @@ parameters:
       unit: SD
       min: 0.1
       max: 5.0
+    EKF2_RNG_FOG:
+      description:
+        short: Max
+        long: If the range finder measures a distance
+      type: float
+      default: 0.0
+      min: 0.0
+      max: 20.0
+      unit: m
+      decimal: 1
     EKF2_EVV_GATE:
       description:
         short: Gate size for vision velocity estimate fusion
