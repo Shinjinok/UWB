@@ -97,4 +97,3 @@ private:
 };
 
 #endif // OPEN_DRONE_ID_ARM_STATUS_HPP
-
