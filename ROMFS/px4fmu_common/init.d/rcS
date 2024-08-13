@@ -595,7 +595,10 @@ else
 	then
 		zenoh start
 	fi
-
+#
+	# Start the fake_gps.
+	#
+	fake_gps start
 #
 # End of autostart.
 #
