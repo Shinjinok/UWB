@@ -115,7 +115,7 @@ PARAM_DEFINE_INT32(FAKE_GPS_TAG, 2);
  * @decimal 1
  * @group FAKE_GPS
  */
-PARAM_DEFINE_FLOAT(FAKE_GPS_OFS, -78.f);//two tag atan(5/94) = 3 degree
+PARAM_DEFINE_FLOAT(FAKE_GPS_OFS, 0.f);//two tag atan(5/94) = 3 degree
 
 /**
  * GPS1 used for USS
@@ -150,7 +150,7 @@ PARAM_DEFINE_INT32(FAKE_GPS_EN, 0);
  * @boolean
  * @group Sensors
  */
-PARAM_DEFINE_INT32(FAKE_GPS_UGV, 0);
+PARAM_DEFINE_INT32(FAKE_GPS_UGV, 1);
 /**
  * Fake gps NED vel mode
  *

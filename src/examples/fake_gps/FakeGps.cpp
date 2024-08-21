@@ -136,20 +136,21 @@ void FakeGps::Parshing3()
 		GetUwbData(_serial_fd, &uwb1);
 		GetUwbData(_serial_fd2, &uwb2);
 		calTwoTag();
-		Mydatalog2();
+		//Mydatalog2();
 	}
 	else{
 		GetUwbData(_serial_fd, &uwb);
 		calOneTag();
 	}
 
-	if(!_set_fake_gps) {
+	SetGps();
+/* 	if(!_set_fake_gps) {
 		SetGps();
 		_set_fake_gps = true;
 	}
 	else{
 		_set_fake_gps = false;
-	}
+	} */
 
 }
 void FakeGps::calOneTag()
@@ -180,15 +181,15 @@ void FakeGps::calOneTag()
 	}
 
 
-	uwb.dlat = uwb.x2 * uwb.km2lat * 10.;
-	uwb.dlon = uwb.y2 * uwb.km2lon * 10.;
+	uwb.dlat = uwb.x2 * uwb.km2lat * 1e-6;// * 10.;
+	uwb.dlon = uwb.y2 * uwb.km2lon * 1e-6;// * 10.;
 }
 
 
 void FakeGps::calTwoTag()
 {
 	//position
-	uwb.xmm = (uwb1.xmm + uwb2.xmm)/2;
+	uwb.xmm = (uwb1.xmm + uwb2.xmm)/2; // [mm]
 	uwb.ymm = (uwb1.ymm + uwb2.ymm)/2;
 	uwb.zmm = (uwb1.zmm + uwb2.zmm)/2;
 	//heading
@@ -198,10 +199,10 @@ void FakeGps::calTwoTag()
 		uwb.heading = 0.;
 	}
 	else if(dy > 0) {
-		uwb.heading = rad90  - atan((double) dx/(double)dy);
+		uwb.heading = rad90  - atan( (double)dx/(double)dy);
 	}
 	else if(dy < 0){
-		uwb.heading = rad270 - atan((double) dx/(double)dy);
+		uwb.heading = rad270 - atan( (double)dx/(double)dy);
 	}
 	else{
 		uwb.heading = rad360;
@@ -218,15 +219,15 @@ void FakeGps::calTwoTag()
 
 
 	//rotation uwb coordnation to wgs84 system
-	uwb.x2 = uwb.cosrou * (double) uwb.xmm + uwb.sinrou * (double) uwb.ymm;
-	uwb.y2 = -uwb.sinrou * (double) uwb.xmm + uwb.cosrou * (double) uwb.ymm;
-	uwb.z2 = (double) uwb.zmm;
+	uwb.x2 = uwb.cosrou * uwb.xmm + uwb.sinrou *  uwb.ymm;
+	uwb.y2 = -uwb.sinrou *  uwb.xmm + uwb.cosrou * uwb.ymm;
+	uwb.z2 =  uwb.zmm;
 	//velocity estimation
-	uwb.vx = velocity_estimation(uwb.x2 / 1000., uwb.x_buf);
+	uwb.vx = velocity_estimation(uwb.x2 / 1000., uwb.x_buf);// [m/s]
 	uwb.vy = velocity_estimation(uwb.y2 / 1000., uwb.y_buf);
 	uwb.vz = velocity_estimation(uwb.z2 / 1000., uwb.z_buf);
 	//flight speed
-	uwb.vgps = sqrt(uwb.vx*uwb.vx+uwb.vy*uwb.vy);
+	uwb.vgps = sqrt(uwb.vx*uwb.vx+uwb.vy*uwb.vy);//[m/s]
 	//course over ground
 	uwb.cog=0.;
 	if(uwb.vy > -1e-7 && uwb.vy < 1e-7 && uwb.vx > 0. ){
@@ -243,8 +244,8 @@ void FakeGps::calTwoTag()
 	}
 
 
-	uwb.dlat = (double) uwb.x2 * uwb.km2lat * 10.;
-	uwb.dlon = (double) uwb.y2 * uwb.km2lon * 10.;
+	uwb.dlat =  uwb.x2 * uwb.km2lat * 1e-6;// x2[mm], y2[mm]-> [km]
+	uwb.dlon =  uwb.y2 * uwb.km2lon * 1e-6;
 }
 
 
@@ -266,23 +267,23 @@ void FakeGps::SetGps()
 			sensor_gps.altitude_ellipsoid_m = _altitude + uwb.zmm;
 			sensor_gps.vel_d_m_s = -uwb.vz ;// m/s
 		}
-		sensor_gps.s_variance_m_s = 0.15f;
-		sensor_gps.c_variance_rad = 0.2f;
-		sensor_gps.eph = 0.55f;
-		sensor_gps.epv = 1.f;
-		sensor_gps.hdop = 0.58f;
-		sensor_gps.vdop = 1.f;
-		sensor_gps.noise_per_ms = 100;
-		sensor_gps.jamming_indicator = 9;
+		sensor_gps.s_variance_m_s = 0.1f;
+		sensor_gps.c_variance_rad = 0.1f;
+		sensor_gps.eph = 0.1f;
+		sensor_gps.epv = 0.1f;
+		sensor_gps.hdop = 0.1f;
+		sensor_gps.vdop = 0.1f;
+		sensor_gps.noise_per_ms = 0.1;
+		sensor_gps.jamming_indicator = 0;
 		sensor_gps.vel_m_s = uwb.vgps ;// m/s
 		sensor_gps.vel_n_m_s = uwb.vx ;// m/s
 		sensor_gps.vel_e_m_s = uwb.vy ;// m/s
 
-		sensor_gps.cog_rad = uwb.cog;
+		sensor_gps.cog_rad = uwb.cog;//rad
 		sensor_gps.timestamp_time_relative = 0;
-		sensor_gps.heading = uwb.heading;
+		sensor_gps.heading = uwb.heading;//rad
 		sensor_gps.heading_offset = 0.0;
-		sensor_gps.fix_type = 3;
+		sensor_gps.fix_type = 5;
 		sensor_gps.jamming_state = 0;
 		sensor_gps.spoofing_state = 0;
 		sensor_gps.vel_ned_valid = (bool) _using_ned_vel;
@@ -352,7 +353,7 @@ void FakeGps::Mydatalog2()
 		//PX4_WARN("SD File open\n");
 	}
 	else if(_armed) {
-		fprintf(pFile,"%d,%d,%d,%d,%d,%d,%d,%d\n",
+		fprintf(pFile,"%d,%d,%f,%f,%f,%f,%f,%f\n",
 		uwb1.uwb_count, uwb2.uwb_count, uwb1.xmm,uwb1.ymm,uwb1.zmm,uwb2.xmm,uwb2.ymm,uwb2.zmm);
 	}
 	else if(pFile != NULL){

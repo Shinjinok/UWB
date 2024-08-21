@@ -50,9 +50,9 @@ struct UWB{
 	int uwb_count{0};
 	int solution_iter_num{0};
 	double rou{0.};
-	int xmm{0};
-	int ymm{0};
-	int zmm{0};
+	double xmm{0};
+	double ymm{0};
+	double zmm{0};
 	double x2{0.};
 	double y2{0.};
 	double z2{0.};
