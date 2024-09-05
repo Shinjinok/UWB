@@ -7,3 +7,8 @@ CONFIG_MODULES_ROVER_DIFFERENTIAL=y
 
 parameter ekf2_gps_ctrl = 15 check dual antenna heading
 
+Tag head tele2
+Tag tail uart2&i2c
+
+mode ch 5
+arm /disarm ch6
