@@ -148,6 +148,16 @@ void RoverAckermannGuidance::updateSubscriptions()
 		_mission_result_sub.copy(&mission_result);
 		_mission_finished = mission_result.finished;
 	}
+
+	if(_trajectory_setpoint_sub.updated()){
+		trajectory_setpoint_s trajectory_setpoint{};
+		_trajectory_setpoint_sub.copy(&trajectory_setpoint);
+
+		_curr_wp_ned(0) = trajectory_setpoint.position[0];
+		_curr_wp_ned(1) = trajectory_setpoint.position[1];
+		PX4_WARN("%i %i\n",(int) _curr_wp_ned(0),(int) _curr_wp_ned(1));
+
+	}
 }
 
 void RoverAckermannGuidance::updateWaypointsAndAcceptanceRadius()
