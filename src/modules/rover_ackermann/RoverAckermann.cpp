@@ -93,7 +93,7 @@ void RoverAckermann::Run()
 
 			} break;
 		case vehicle_status_s::NAVIGATION_STATE_OFFBOARD:
-			_motor_setpoint = _ackermann_guidance.computeGuidance(_nav_state);
+			_motor_setpoint = _ackermann_guidance.computeOffboard(_nav_state);
 			break;
 		case vehicle_status_s::NAVIGATION_STATE_AUTO_MISSION:
 		case vehicle_status_s::NAVIGATION_STATE_AUTO_RTL:

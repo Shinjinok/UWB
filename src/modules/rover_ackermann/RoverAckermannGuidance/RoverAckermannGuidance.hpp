@@ -89,6 +89,8 @@ public:
 	 * @return Motor setpoints for throttle and steering.
 	 */
 	motor_setpoint computeGuidance(int nav_state);
+	motor_setpoint computeOffboard(int nav_state);
+
 
 protected:
 	/**

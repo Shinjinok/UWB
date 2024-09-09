@@ -103,7 +103,48 @@ RoverAckermannGuidance::motor_setpoint RoverAckermannGuidance::computeGuidance(c
 	motor_setpoint_temp.throttle = throttle;
 	return motor_setpoint_temp;
 }
+RoverAckermannGuidance::motor_setpoint RoverAckermannGuidance::computeOffboard(const int nav_state)
+{
+	updateSubscriptions();
 
+	float dx = _curr_wp_ned(0) - _curr_pos_ned(0);
+	float dy = _curr_wp_ned(1) - _curr_pos_ned(1);
+	_distance_to_curr_wp = sqrt(dx*dx+dy*dy);
+	_acceptance_radius = _param_nav_acc_rad.get();
+
+	if (_distance_to_curr_wp < _acceptance_radius) { // Catch delay command
+		_desired_speed = 0.f;
+
+	} else { // Regular guidance algorithm
+		_desired_speed = calcDesiredSpeed(_param_ra_miss_vel_def.get(), _param_ra_miss_vel_min.get(),
+						  _param_ra_miss_vel_gain.get(), _distance_to_prev_wp, _distance_to_curr_wp, _acceptance_radius,
+						  _prev_acceptance_radius, _param_ra_max_accel.get(), _param_ra_max_jerk.get(), nav_state);
+
+		_desired_steering = calcDesiredSteering(_pure_pursuit, _curr_wp_ned, _prev_wp_ned, _curr_pos_ned,
+							_param_ra_wheel_base.get(), _desired_speed, _vehicle_yaw, _param_ra_max_steer_angle.get());
+
+	}
+
+	// Calculate throttle setpoint
+	hrt_abstime timestamp_prev = _timestamp;
+	_timestamp = hrt_absolute_time();
+	const float dt = math::constrain(_timestamp - timestamp_prev, 1_ms, 5000_ms) * 1e-6f;
+	const float throttle = calcThrottleSetpoint(_pid_throttle, _desired_speed, _actual_speed, _param_ra_max_speed.get(),
+			       dt);
+
+	// Publish ackermann controller status (logging)
+	_rover_ackermann_guidance_status.timestamp = _timestamp;
+	_rover_ackermann_guidance_status.desired_speed = _desired_speed;
+	_rover_ackermann_guidance_status.pid_throttle_integral = _pid_throttle.integral;
+	_rover_ackermann_guidance_status_pub.publish(_rover_ackermann_guidance_status);
+
+	// Return motor setpoints
+	motor_setpoint motor_setpoint_temp;
+	motor_setpoint_temp.steering = math::interpolate<float>(_desired_steering, -_param_ra_max_steer_angle.get(),
+				       _param_ra_max_steer_angle.get(), -1.f, 1.f); // Normalize steering setpoint
+	motor_setpoint_temp.throttle = throttle;
+	return motor_setpoint_temp;
+}
 void RoverAckermannGuidance::updateSubscriptions()
 {
 	if (_vehicle_global_position_sub.updated()) {
